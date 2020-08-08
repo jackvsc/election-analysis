@@ -1,11 +1,13 @@
-# The data we need to retrieve.
 import csv
 import os
 
-# Load the data file.
+# Load our data file.
 election_results = os.path.join('resources','election_results.csv')
 
-# Initialize variables.
+# Write our results.
+election_analysis = os.path.join('analysis','election_analysis.txt')
+
+# Initialize our variables.
 total_votes = 0
 candidates = []
 candidate_votes = {}
@@ -14,20 +16,22 @@ winner = ''
 winning_count = 0
 winning_pct = 0
 
-# Open, read, and analyze the data file.
+spacer = '-------------------------'
+
+# Open, read, and analyze our data file.
 with open(election_results) as election_data:
-    reader = csv.reader(election_data)
+    file_reader = csv.reader(election_data)
 
     # Skip the header.
-    header = next(reader)
+    header = next(file_reader)
 
-    # Print each row in the data file.
-    for row in reader:
+    # Read our data file.
+    for row in file_reader:
         
         # Add to the total vote count.
         total_votes += 1
 
-        # Add the candidate name to the candidate list.
+        # Add each candidate name to our candidate list.
         candidate = row[2]
         if candidate not in candidates:
             candidates.append(candidate)
@@ -36,30 +40,53 @@ with open(election_results) as election_data:
         # Tally the votes for each candidate.
         candidate_votes[candidate] += 1
 
-    # Print a list of the candidates in this election.
-    print(f'There are {len(candidates)} candidates in this election.\n')
+with open(election_analysis,'w') as output:
+    # Total votes cast.
+    election_results = (
+        f'Election Results\n'
+        f'{spacer}\n'
+        f'There were {total_votes:,} total votes cast in the election.\n'
+        f'{spacer}\n'
+        )
+
+    print(election_results)
+    output.write(election_results)
+
+    # List each candidate in this election.
+    candidate_count = (f'There are {len(candidates)} candidates in this election.\n\n')
+    print(candidate_count)
+    output.write(candidate_count)
+
     for candidate in candidates:
         print(candidate)
+        output.write(f'{candidate}\n')
 
-    print('')
+    # Lil space (everyone needs it.)
+    print(spacer)
+    output.write(f'{spacer}\n')
 
     # The percentage of the popular vote & the total votes for each candidate.
     for candidate in candidate_votes:
         votes = candidate_votes[candidate]
         vote_pct = votes / total_votes * 100
+        candidate_summary = (f'{candidate} received {vote_pct:.1f}% of the popular vote and {votes:,} total votes.\n')
 
-        # Choosing a winner.
+        print(candidate_summary)
+        output.write(candidate_summary)
+
+        # Picking a winner.
         if votes > winning_count and vote_pct > winning_pct:
+            winner = candidate
             winning_count = votes
             winning_pct = vote_pct
-            winner = candidate
-        
-        print(f'{candidate} received {vote_pct:.1f}% of the popular vote and {votes:,} total votes.\n')
 
     # And the winner is!
-    print(f'The winner of the election is {winner} with {winning_count:,} total votes and {winning_pct:.1f}% of the popular vote.\n')
+    winner_summary = (
+        f'{spacer}\n'
+        f'The winner of the election is {winner}.\n'
+        f'{winner} got {winning_count:,} total votes.\n'
+        f'{winner} got {winning_pct:.1f}% of the popular vote.'
+        )
 
-# Write our results to a file.
-election_results = os.path.join('analysis','election_analysis.txt')
-with open(election_results,'w') as output:
-    output.write('')
+    print(winner_summary)
+    output.write(f'{winner_summary}')
